@@ -77,6 +77,7 @@ internal class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<ISessionLogRepository, SessionLogRepository>();
         builder.Services.AddScoped<IStudyRepository, StudyRepository>();
+        builder.Services.AddScoped<IAddressRepository, AddressRepository>();
         builder.Services.AddAuthorization();
 
         var app = builder.Build();

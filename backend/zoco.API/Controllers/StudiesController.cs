@@ -65,4 +65,68 @@ public class StudiesController : ControllerBase
             EndDate = study.EndDate
         });
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var userId = User.GetUserId();
+
+        var study = await _studyRepository.GetByIdAsync(id);
+        if (study == null) return NotFound();
+
+        if (!User.IsAdmin() && study.UserId != userId) return Forbid();
+
+        return Ok(new StudyResponse
+        {
+            Id = study.Id,
+            UserId = study.UserId,
+            Title = study.Title,
+            Institution = study.Institution,
+            StartDate = study.StartDate,
+            EndDate = study.EndDate
+        });
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, UpdateStudyRequest request)
+    {
+        var userId = User.GetUserId();
+
+        var study = await _studyRepository.GetByIdAsync(id);
+        if (study == null) return NotFound();
+
+        if (!User.IsAdmin() && study.UserId != userId) return Forbid();
+
+        study.Title = request.Title;
+        study.Institution = request.Institution;
+        study.StartDate = request.StartDate;
+        study.EndDate = request.EndDate;
+
+        await _studyRepository.UpdateAsync(study);
+
+        return Ok(new StudyResponse
+        {
+            Id = study.Id,
+            UserId = study.UserId,
+            Title = study.Title,
+            Institution = study.Institution,
+            StartDate = study.StartDate,
+            EndDate = study.EndDate
+        });
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var userId = User.GetUserId();
+
+        var study = await _studyRepository.GetByIdAsync(id);
+        if (study == null) return NotFound();
+
+        if (!User.IsAdmin() && study.UserId != userId) return Forbid();
+
+        await _studyRepository.DeleteAsync(study);
+
+        return NoContent();
+    }
 }
