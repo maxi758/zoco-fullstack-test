@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using zoco.API.Common;
 using zoco.Application.DTOs.Studies;
 using zoco.Application.Interfaces.Repositories;
+using zoco.Application.Services.Interfaces;
 using zoco.Domain.Entities;
 
 namespace zoco.API.Controllers;
@@ -12,11 +13,11 @@ namespace zoco.API.Controllers;
 [Route("api/[controller]")]
 public class StudiesController : ControllerBase
 {
-    private readonly IStudyRepository _studyRepository;
+    private readonly IStudyService _studyService;
 
-    public StudiesController(IStudyRepository studyRepository)
+    public StudiesController(IStudyService studyService)
     {
-        _studyRepository = studyRepository;
+        _studyService = studyService;
     }
 
     [HttpGet]
@@ -24,7 +25,7 @@ public class StudiesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var studies = await _studyRepository.GetByUserIdAsync(userId);
+        var studies = await _studyService.GetMineAsync(userId);
 
         var result = studies.Select(s => new StudyResponse
         {
@@ -43,17 +44,18 @@ public class StudiesController : ControllerBase
     public async Task<IActionResult> Create(CreateStudyRequest request)
     {
         var userId = User.GetUserId();
+        var isAdmin = User.IsAdmin();
 
         var study = new Study
         {
-            UserId = userId,
+            UserId = request.UserId,
             Title = request.Title,
             Institution = request.Institution,
             StartDate = request.StartDate,
             EndDate = request.EndDate
         };
 
-        await _studyRepository.AddAsync(study);
+        await _studyService.CreateAsync(userId, isAdmin, request);
 
         return Ok(new StudyResponse
         {
@@ -70,8 +72,9 @@ public class StudiesController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var userId = User.GetUserId();
+        var isAdmin = User.IsAdmin();
 
-        var study = await _studyRepository.GetByIdAsync(id);
+        var study = await _studyService.GetByIdAsync(userId, isAdmin, id);
         if (study == null) return NotFound();
 
         if (!User.IsAdmin() && study.UserId != userId) return Forbid();
@@ -91,41 +94,18 @@ public class StudiesController : ControllerBase
     public async Task<IActionResult> Update(Guid id, UpdateStudyRequest request)
     {
         var userId = User.GetUserId();
+        var isAdmin = User.IsAdmin();
 
-        var study = await _studyRepository.GetByIdAsync(id);
-        if (study == null) return NotFound();
-
-        if (!User.IsAdmin() && study.UserId != userId) return Forbid();
-
-        study.Title = request.Title;
-        study.Institution = request.Institution;
-        study.StartDate = request.StartDate;
-        study.EndDate = request.EndDate;
-
-        await _studyRepository.UpdateAsync(study);
-
-        return Ok(new StudyResponse
-        {
-            Id = study.Id,
-            UserId = study.UserId,
-            Title = study.Title,
-            Institution = study.Institution,
-            StartDate = study.StartDate,
-            EndDate = study.EndDate
-        });
+        return Ok(await _studyService.UpdateAsync(userId, isAdmin, id, request));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var userId = User.GetUserId();
+        var isAdmin = User.IsAdmin();
 
-        var study = await _studyRepository.GetByIdAsync(id);
-        if (study == null) return NotFound();
-
-        if (!User.IsAdmin() && study.UserId != userId) return Forbid();
-
-        await _studyRepository.DeleteAsync(study);
+        await _studyService.DeleteAsync(userId, isAdmin, id);
 
         return NoContent();
     }
