@@ -14,7 +14,7 @@ public class StudyService : IStudyService
         _studyRepository = studyRepository;
     }
 
-    public async Task<List<StudyResponse>> GetMineAsync(Guid currentUserId)
+    public async Task<List<StudyResponse>> GetByUserIdAsync(Guid currentUserId)
     {
         var studies = await _studyRepository.GetByUserIdAsync(currentUserId);
         return studies.Select(ToResponse).ToList();
@@ -30,6 +30,7 @@ public class StudyService : IStudyService
 
         return ToResponse(study);
     }
+
 
     public async Task<StudyResponse> CreateAsync(Guid currentUserId, bool isAdmin,  CreateStudyRequest request)
     {

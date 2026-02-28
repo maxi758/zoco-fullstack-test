@@ -18,6 +18,14 @@ internal class Program
 
         // Add services to the container.
 
+        builder.Services.AddCors(options => 
+        { 
+            options.AddPolicy("AllowFrontend", p => p.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            ); 
+        }); 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -92,7 +100,7 @@ internal class Program
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
-        app.UseAuthorization();
+        app.UseCors("AllowFrontend"); app.UseAuthorization();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -103,7 +111,7 @@ internal class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+        app.UseCors("AllowFrontend"); app.UseAuthorization();
 
         app.MapControllers();
 
