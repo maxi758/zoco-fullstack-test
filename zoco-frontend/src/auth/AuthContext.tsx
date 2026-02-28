@@ -13,7 +13,7 @@ type LoginResponse = { token: string; role: string; userId: string; email: strin
 
 type AuthContextValue = AuthState & {
     login: (req: LoginRequest) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -41,7 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setEmail(res.email);
     }
 
-    function logout() {
+    async function logout() {
+        if (token) {
+            try {
+                await api("/auth/logout", { method: "POST" });
+            } catch (e) {
+                console.error("Error setting logout FechaFin in backend", e);
+            }
+        }
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("role");
         sessionStorage.removeItem("userId");

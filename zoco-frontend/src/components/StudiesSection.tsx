@@ -12,8 +12,6 @@ export function StudiesSection({ userId, isAdmin }: Props) {
     const { showAlert } = useAlert();
     const [studies, setStudies] = useState<StudyDto[]>([]);
     const [loading, setLoading] = useState(false);
-
-    // form state
     const [isEditing, setIsEditing] = useState(false);
     const [editingStudyId, setEditingStudyId] = useState<number | null>(null);
     const [title, setTitle] = useState("");
