@@ -20,10 +20,11 @@ internal class Program
 
         builder.Services.AddCors(options => 
         { 
-            options.AddPolicy("AllowFrontend", p => p.WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()
+            options.AddPolicy("AllowFrontend", p => p
+                .WithOrigins("http://localhost:5173", "https://zoco-fullstack.vercel.app")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
             ); 
         }); 
         builder.Services.AddControllers();
@@ -106,7 +107,8 @@ internal class Program
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
-        app.UseCors("AllowFrontend"); app.UseAuthorization();
+        app.UseCors("AllowFrontend");
+        app.UseAuthorization();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -116,8 +118,6 @@ internal class Program
         }
 
         app.UseHttpsRedirection();
-
-        app.UseCors("AllowFrontend"); app.UseAuthorization();
 
         app.MapControllers();
 

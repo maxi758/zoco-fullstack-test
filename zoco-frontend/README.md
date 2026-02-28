@@ -2,7 +2,7 @@
 
 Este proyecto corresponde a la parte Frontend de la solución desarrollada para la prueba técnica. Es una aplicación React interactivada, construida con Vite, TypeScript y estilizada con Tailwind CSS. Permite a los usuarios y administradores gestionar perfiles, direcciones y estudios.
 
-🔗 **Link del Deploy (Vercel):** [INSERT DEPLOY LINK HERE]
+🔗 **Link del Deploy (Vercel):** [https://zoco-fullstack.vercel.app/](https://zoco-fullstack.vercel.app/)
 
 ## 🛠️ Tecnologías Utilizadas
 
