@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using zoco.API.Middleware;
 using zoco.Application.Interfaces.Repositories;
+using zoco.Application.Services;
+using zoco.Application.Services.Interfaces;
 using zoco.Infrastructure.Persistence;
 using zoco.Infrastructure.Repositories;
 
@@ -74,6 +77,10 @@ internal class Program
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
         });
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IAddressService, AddressService>();
+        builder.Services.AddScoped<IStudyService, StudyService>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<ISessionLogRepository, SessionLogRepository>();
         builder.Services.AddScoped<IStudyRepository, StudyRepository>();
@@ -81,6 +88,8 @@ internal class Program
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
+
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();
