@@ -41,15 +41,28 @@ En la raíz del proyecto backend, debes abrir o modificar el archivo `appsetting
 }
 ```
 
-### 2. Aplicar las Migraciones y crear la Base de Datos
+### 2. Crear la Base de Datos
 
-El repositorio ya contiene la carpeta de `Migrations`. Para generar automáticamente las bases de datos y las tablas de Usuarios, Roles, Sesiones, Direcciones y Estudios, ejecuta el siguiente comando en la consola del administrador de paquetes (Visual Studio) o utilizando la CLI de EF Tools:
+Toda la estructura necesaria de la base de datos (tablas, relaciones y un usuario Administrador inicial para pruebas) está provista en el archivo `Script.sql` ubicado en la raíz de este repositorio.
 
+Existen dos formas de preparar la base de datos:
+
+**Opción A: Ejecutar el Script SQL (Recomendado)**
+1. Abre SQL Server Management Studio (SSMS) o Azure Data Studio.
+2. Conéctate a tu instancia local de SQL Server.
+3. Abre el archivo `Script.sql` y ejecútalo. Esto creará la BD `ZocoTestDb` e insertará datos de prueba.
+
+**Opción B: Usar las Migraciones de Entity Framework**
+Si prefieres que EF Core genere la base de datos automáticamente:
 ```bash
-# Si usas la CLI de .NET:
+# Ejecutar en la misma carpeta donde está el .sln
 dotnet ef database update
 ```
-*(También se provee un script `Script.sql` en la raíz en caso de que prefieras crear la base manualmente).*
+
+**🔑 Credenciales de Prueba (Administrador)**
+Si utilizas el `Script.sql` de arriba o ejecutas las migraciones, el `DbSeeder` generará una cuenta de administrador por defecto, lista para probar el Panel de Control:
+- **Email:** `admin@zoco.local`
+- **Password:** `Admin123!`
 
 ### 3. Ejecutar el Proyecto
 

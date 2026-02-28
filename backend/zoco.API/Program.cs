@@ -97,6 +97,12 @@ internal class Program
 
         var app = builder.Build();
 
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            DbSeeder.SeedAsync(db).GetAwaiter().GetResult();
+        }
+
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
