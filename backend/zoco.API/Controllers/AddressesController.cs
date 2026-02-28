@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using zoco.API.Common;
 using zoco.Application.DTOs.Addresses;
+using zoco.Application.DTOs.Studies;
+using zoco.Application.Services;
 using zoco.Application.Services.Interfaces;
 using zoco.Domain.Entities;
 
@@ -23,7 +25,7 @@ public class AddressesController : ControllerBase
     public async Task<IActionResult> GetMine()
     {
         var userId = User.GetUserId();
-        return Ok(await _addressService.GetMineAsync(userId));
+        return Ok(await _addressService.GetByUserIdAsync(userId));
     }
 
     [HttpGet("{id:guid}")]
@@ -34,10 +36,32 @@ public class AddressesController : ControllerBase
         return Ok(await _addressService.GetByIdAsync(userId, isAdmin, id));
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet("user/{userId:guid}")]
+    public async Task<IActionResult> GetByUserId(Guid userId)
+    {
+        var addresses = await _addressService.GetByUserIdAsync(userId);
+
+        var result = addresses.Select(a => new AddressResponse
+        {
+            Id = a.Id,
+            UserId = a.UserId,
+            Street = a.Street,
+            City = a.City,
+            State = a.State,
+            Country = a.Country,
+            ZipCode = a.ZipCode
+        });
+
+        return Ok(result);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(CreateAddressRequest request)
     {
         var userId = User.GetUserId();
+        var isAdmin = User.IsAdmin();
+
         var address = new Address
             {
             UserId = userId,
@@ -47,8 +71,17 @@ public class AddressesController : ControllerBase
             ZipCode = request.ZipCode,
             Country = request.Country
         };
-        await _addressService.CreateAsync(userId, request);
-        return Ok();
+        await _addressService.CreateAsync(userId, isAdmin, request);
+        return Ok( new AddressResponse
+        {
+            Id = address.Id,
+            UserId = address.UserId,
+            Street = address.Street,
+            City = address.City,
+            State = address.State,
+            Country = address.Country,
+            ZipCode = address.ZipCode
+        });
     }
 
     [HttpPut("{id:guid}")]

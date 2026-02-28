@@ -25,7 +25,7 @@ public class StudiesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var studies = await _studyService.GetMineAsync(userId);
+        var studies = await _studyService.GetByUserIdAsync(userId);
 
         var result = studies.Select(s => new StudyResponse
         {
@@ -37,6 +37,24 @@ public class StudiesController : ControllerBase
             EndDate = s.EndDate
         });
 
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("user/{userId:guid}")]
+    public async Task<IActionResult> GetByUserId(Guid userId)
+    {
+        
+        var studies = await _studyService.GetByUserIdAsync(userId);
+        var result = studies.Select(s => new StudyResponse
+        {
+            Id = s.Id,
+            UserId = s.UserId,
+            Title = s.Title,
+            Institution = s.Institution,
+            StartDate = s.StartDate,
+            EndDate = s.EndDate
+        });
         return Ok(result);
     }
 

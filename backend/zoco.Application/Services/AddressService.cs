@@ -14,7 +14,7 @@ public class AddressService : IAddressService
         _addressRepository = addressRepository;
     }
 
-    public async Task<List<AddressResponse>> GetMineAsync(Guid currentUserId)
+    public async Task<List<AddressResponse>> GetByUserIdAsync(Guid currentUserId)
     {
         var addresses = await _addressRepository.GetByUserIdAsync(currentUserId);
         return addresses.Select(ToResponse).ToList();
@@ -31,11 +31,15 @@ public class AddressService : IAddressService
         return ToResponse(address);
     }
 
-    public async Task<AddressResponse> CreateAsync(Guid currentUserId, CreateAddressRequest request)
+    public async Task<AddressResponse> CreateAsync(Guid currentUserId, bool isAdmin, CreateAddressRequest request)
     {
+        var targetUserId = (isAdmin && request.UserId != Guid.Empty)
+                       ? request.UserId
+                       : currentUserId;
+
         var address = new Address
         {
-            UserId = currentUserId,
+            UserId = targetUserId,
             Street = request.Street,
             City = request.City,
             State = request.State,
