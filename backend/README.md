@@ -1,207 +1,69 @@
-﻿Zoco FullStack Technical Test — Backend (.NET 8)
+﻿# Prueba Técnica - Full Stack Developer (Backend .NET)
 
-API REST desarrollada con .NET 8, Entity Framework Core (Code First), SQL Server / LocalDB, autenticación mediante JWT (Bearer) y documentación interactiva con Swagger.
+Este proyecto corresponde a la parte Backend de la solución desarrollada para la prueba técnica. Es una API RESTful construida en **.NET 6+** siguiendo una arquitectura multicapa (Controllers, Services, Repositories), utilizando **Entity Framework Core** para el acceso a datos y asegurada mediante **Autenticación JWT** y políticas basadas en Roles.
 
-🛠 Stack Tecnológico
+## 🛠️ Tecnologías Utilizadas
 
-.NET 8 (ASP.NET Core Web API)
+- **Framework:** .NET Core 6+ / ASP.NET Core Web API
+- **Base de Datos:** SQL Server
+- **ORM:** Entity Framework Core
+- **Seguridad:** Autenticación JWT y Middleware de Autorización por Roles (`[Authorize]`)
+- **Documentación:** Swagger (OpenAPI) integrado y asegurado
 
-Entity Framework Core
+## 🏗️ Requisitos Funcionales Implementados
 
-SQL Server / LocalDB
+- **Autenticación:** Endpoints para Login y Registro. Generación de claims por rol y registro de la hora de inicio y fin de la sesión mediante la tabla `SessionLogs`.
+- **Gestión de Recursos Relacionados:** CRUD completo para Usuarios, Direcciones y Estudios con validación unívoca (un usuario regular solo puede consultar, editar y borrar sus propios registros, asegurando la propiedad de la entidad).
+- **Control de Acceso basado en Roles (RBAC):** Privilegios elevados para el rol `Admin`, el cual puede saltarse las restricciones de pertenencia de registros para gestionar todo el sistema.
+- **Auditoría e Integridad:** Estructura modular, inyección de dependencias estricta y uso de DTOs para no exponer los modelos de base de datos de Entity Framework hacia el exterior.
 
-JWT Authentication (Bearer)
+## ⚙️ Requisitos previos
 
-Swagger (Swashbuckle)
+- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) o superior instalado.
+- Servidor local de **SQL Server** o SQL Server Express (usualmente `(localdb)\MSSQLLocalDB` o `.\SQLEXPRESS`).
 
-📋 Requisitos
+## 🚀 Instrucciones de Ejecución Local
 
-.NET SDK 8.x
+### 1. Configurar la Base de Datos (`appsettings.json`)
 
-SQL Server o LocalDB instalado
+En la raíz del proyecto backend, debes abrir o modificar el archivo `appsettings.json` o `appsettings.Development.json` para asegurarte de que la cadena de conexión (`DefaultConnection`) apunte a tu instancia local de SQL Server, y que las claves JWT correspondan a tus requerimientos de seguridad.
 
-Visual Studio 2022 (opcional)
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.\\SQLEXPRESS;Database=ZocoTestDb;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False"
+  },
+  "JwtSettings": {
+    "Key": "A_Very_Long_And_Secure_Development_Secret_Key_1234567890",
+    "Issuer": "ZocoTestIssuer",
+    "Audience": "ZocoTestAudience"
+  }
+}
+```
 
-## 🌀 Quickstart (desde 0)
-1. Clonar:
-git clone https://github.com/maxi758/zoco-fullstack-test.git cd zoco-fullstack-test
-2. Restaurar paquetes:
-dotnet restore
+### 2. Aplicar las Migraciones y crear la Base de Datos
 
-⚙ Configuración
+El repositorio ya contiene la carpeta de `Migrations`. Para generar automáticamente las bases de datos y las tablas de Usuarios, Roles, Sesiones, Direcciones y Estudios, ejecuta el siguiente comando en la consola del administrador de paquetes (Visual Studio) o utilizando la CLI de EF Tools:
 
-Configurar variables (editar `zoco.API/appsettings.Development.json` o usar variables de entorno):
-- `ConnectionStrings:Default` — cadena de conexión
-- `Jwt:Key` — 32+ caracteres
-- `Jwt:Issuer`, `Jwt:Audience`, `Jwt:ExpiresMinutes`
+```bash
+# Si usas la CLI de .NET:
+dotnet ef database update
+```
+*(También se provee un script `Script.sql` en la raíz en caso de que prefieras crear la base manualmente).*
 
-🗄 Base de Datos (Migraciones)
-Crear migraciones / aplicar DB:
-- CLI:
-  ```
-  dotnet tool install --global dotnet-ef
-  dotnet ef migrations add InitialCreate --project zoco.Infrastructure --startup-project zoco.API
-  dotnet ef database update --project zoco.Infrastructure --startup-project zoco.API
-  ```
-- Visual Studio: abrir solución y en __Package Manager Console__ seleccionar `zoco.Infrastructure` y ejecutar:
-  ```
-  Add-Migration InitialCreate
-  Update-Database
-  ```
-▶ Ejecutar la API
-Desde Visual Studio
+### 3. Ejecutar el Proyecto
 
-Presionar F5
+Compila e inicia el proyecto por terminal (o presionando F5 en Visual Studio).
 
-Desde consola
-dotnet run --project zoco.API
+```bash
+dotnet run
+```
 
-Swagger estará disponible en:
+La consola generará las rutas HTTP y HTTPS por defecto del servidor Kestrel.
 
-https://localhost:<PUERTO>/swagger
-## 🔐 Uso básico (JWT)
-1. `POST /api/auth/register` — registrar usuario  
-2. `POST /api/auth/login` — obtener JWT  
-3. En Swagger: Authorize → `Bearer <TOKEN>`  
-4. Endpoints protegidos devuelven 401/403 según autorización
+### 4. Acceder al Swagger UI
 
-Para acciones sobre recursos de otros usuarios (p. ej. crear estudio para otro user) se usa el mismo endpoint con `?userId=<USER_ID>` cuando aplique; los servicios validan permisos.
+Con la API corriendo, navega en tu explorador hacia:
+`https://localhost:<TU_PUERTO>/swagger`
 
-Logout
-
-POST /api/auth/logout
-
-👥 Roles
-
-El sistema tiene dos roles:
-
-Usuario (User)
-
-Puede gestionar únicamente su propio perfil.
-
-Puede gestionar únicamente sus propios estudios y direcciones.
-
-Administrador (Admin)
-
-Puede gestionar cualquier usuario.
-
-Puede gestionar estudios y direcciones de cualquier usuario.
-
-🔄 Convertir un Usuario en Admin (para pruebas)
-
-Ejecutar en la base de datos:
-
-UPDATE Users
-SET Role = 1
-WHERE Email = 'admin@email.com';
-
-Luego volver a hacer login para obtener un nuevo token con rol Admin.
-
-📌 Endpoints Principales
-👤 Usuarios
-
-GET /api/users/me
-
-GET /api/users (Admin)
-
-GET /api/users/{id} (Admin)
-
-PUT /api/users/{id}
-
-Usuario puede modificar solo su propio usuario
-
-Admin puede modificar cualquier usuario
-
-DELETE /api/users/{id}
-
-🎓 Estudios
-
-GET /api/studies
-
-POST /api/studies
-
-GET /api/studies/{id}
-
-PUT /api/studies/{id}
-
-DELETE /api/studies/{id}
-
-
-🏠 Direcciones
-
-GET /api/addresses
-
-POST /api/addresses
-
-GET /api/addresses/{id}
-
-PUT /api/addresses/{id}
-
-DELETE /api/addresses/{id}
-
-
-🧠 Manejo de Errores
-
-La API implementa un middleware global para manejo de excepciones:
-
-401 → No autenticado
-
-403 → No autorizado
-
-404 → Recurso no encontrado
-
-400 → Error de validación o datos inválidos
-
-500 → Error inesperado del servidor
-
-📂 Arquitectura
-
-La solución está estructurada en capas:
-
-API → Controllers + Middleware
-
-Application → Services + DTOs + Interfaces
-
-Domain → Entidades y enums
-
-Infrastructure → Repositorios + DbContext
-
-Se utiliza inyección de dependencias para desacoplar lógica de negocio y acceso a datos.
-
-✅ Funcionalidades Implementadas
-
-Autenticación con JWT
-
-Registro y Login
-
-Logout con registro de sesiones (SessionLogs)
-
-CRUD completo de Usuarios
-
-CRUD completo de Estudios
-
-CRUD completo de Direcciones
-
-Control de acceso basado en roles
-
-Validación de propiedad de recursos
-
-Índice único en Email
-
-Documentación con Swagger
-
-Arquitectura en capas (Controller / Service / Repository)
-
-📌 Notas Finales
-
-Este proyecto fue desarrollado como prueba técnica fullstack, priorizando:
-
-Correcta separación de responsabilidades
-
-Seguridad mediante JWT
-
-Control de acceso por rol
-
-Código claro y mantenible
-
-Buenas prácticas REST
+Allí podrás ver todos los controladores autodocumentados e ingresar tu Token en el candado superior (`Authorize`) para efectuar peticiones a los Endpoints protegidos.
